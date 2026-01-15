@@ -18,7 +18,6 @@ public class IssuesViewModel : ViewModelBase
         _libraryService = libraryService;
         BookIssues = new ObservableCollection<BookIssue>();
         AvailableBooks = new ObservableCollection<Book>();
-        Members = new ObservableCollection<Member>();
 
         // Initialize commands
         LoadDataCommand = new AsyncRelayCommand(async _ => await LoadDataAsync());
@@ -27,14 +26,12 @@ public class IssuesViewModel : ViewModelBase
         ShowActiveIssuesCommand = new AsyncRelayCommand(async _ => await ShowActiveIssuesAsync());
         ShowOverdueIssuesCommand = new AsyncRelayCommand(async _ => await ShowOverdueIssuesAsync());
         ShowAllIssuesCommand = new AsyncRelayCommand(async _ => await LoadDataAsync());
-        RefreshBooksCommand = new AsyncRelayCommand(async _ => await LoadAvailableBooksAsync());
     }
 
     #region Properties
 
     public ObservableCollection<BookIssue> BookIssues { get; }
     public ObservableCollection<Book> AvailableBooks { get; }
-    public ObservableCollection<Member> Members { get; }
 
     private BookIssue? _selectedIssue;
     public BookIssue? SelectedIssue
@@ -50,36 +47,25 @@ public class IssuesViewModel : ViewModelBase
         set => SetProperty(ref _selectedBookToIssue, value);
     }
 
-    private Member? _selectedMember;
-    public Member? SelectedMember
+    /// <summary>
+    /// Informatii despre utilizatorul curent
+    /// </summary>
+    public string CurrentUserInfo
     {
-        get => _selectedMember;
-        set
+        get
         {
-            if (SetProperty(ref _selectedMember, value) && value != null)
-            {
-                MemberInfo = $"Type: {value.MemberType} | Max Books: {value.MaxBooksAllowed} | Max Days: {value.MaxIssueDays}";
-            }
-            else
-            {
-                MemberInfo = string.Empty;
-            }
+            var user = AuthenticationService.CurrentUser;
+            if (user == null) return "";
+
+            var memberType = user.UserMemberType == MemberType.Professor ? "Profesor" : "Student";
+            return $"Imprumut pentru: {user.FullName} ({memberType}) - Max {user.MaxBooksAllowed} carti, {user.MaxIssueDays} zile";
         }
     }
 
-    private string _memberInfo = string.Empty;
-    public string MemberInfo
-    {
-        get => _memberInfo;
-        set => SetProperty(ref _memberInfo, value);
-    }
-
-    private string _issuedBy = "Librarian";
-    public string IssuedBy
-    {
-        get => _issuedBy;
-        set => SetProperty(ref _issuedBy, value);
-    }
+    /// <summary>
+    /// ID-ul membrului utilizatorului curent
+    /// </summary>
+    private int? CurrentMemberId => AuthenticationService.CurrentUserMemberId;
 
     #endregion
 
@@ -91,7 +77,6 @@ public class IssuesViewModel : ViewModelBase
     public ICommand ShowActiveIssuesCommand { get; }
     public ICommand ShowOverdueIssuesCommand { get; }
     public ICommand ShowAllIssuesCommand { get; }
-    public ICommand RefreshBooksCommand { get; }
 
     #endregion
 
@@ -102,31 +87,32 @@ public class IssuesViewModel : ViewModelBase
         try
         {
             IsBusy = true;
-            
-            // Load all issues
-            var issues = await _libraryService.GetAllIssuesAsync();
-            BookIssues.Clear();
-            foreach (var issue in issues)
-            {
-                BookIssues.Add(issue);
-            }
 
             // Load available books
             await LoadAvailableBooksAsync();
 
-            // Load members
-            var members = await _libraryService.GetAllMembersAsync();
-            Members.Clear();
-            foreach (var member in members)
+            // Load issues for current user only
+            if (CurrentMemberId.HasValue)
             {
-                Members.Add(member);
+                var issues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
+                BookIssues.Clear();
+                foreach (var issue in issues.OrderByDescending(i => i.IssueDate))
+                {
+                    BookIssues.Add(issue);
+                }
+                SetStatus($"S-au incarcat {issues.Count} imprumuturi");
+            }
+            else
+            {
+                BookIssues.Clear();
+                SetStatus("Nu exista membru asociat contului", true);
             }
 
-            SetStatus($"S-au încărcat {issues.Count} împrumuturi, {AvailableBooks.Count} cărți disponibile");
+            OnPropertyChanged(nameof(CurrentUserInfo));
         }
         catch (Exception ex)
         {
-            SetStatus($"Eroare la încărcarea datelor: {ex.Message}", true);
+            SetStatus($"Eroare la incarcarea datelor: {ex.Message}", true);
         }
         finally
         {
@@ -146,21 +132,21 @@ public class IssuesViewModel : ViewModelBase
 
     private bool CanIssueBook()
     {
-        return SelectedBookToIssue != null && SelectedMember != null;
+        return SelectedBookToIssue != null && CurrentMemberId.HasValue;
     }
 
     private async Task IssueBookAsync()
     {
-        if (SelectedBookToIssue == null || SelectedMember == null) return;
+        if (SelectedBookToIssue == null || !CurrentMemberId.HasValue) return;
 
         try
         {
             IsBusy = true;
 
             var result = await _libraryService.IssueBookAsync(
-                SelectedBookToIssue.BookId, 
-                SelectedMember.MemberId, 
-                IssuedBy);
+                SelectedBookToIssue.BookId,
+                CurrentMemberId.Value,
+                AuthenticationService.CurrentUser?.FullName ?? "Utilizator");
 
             if (result.Success)
             {
@@ -175,7 +161,7 @@ public class IssuesViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            SetStatus($"Eroare la împrumutarea cărții: {ex.Message}", true);
+            SetStatus($"Eroare la imprumutarea cartii: {ex.Message}", true);
         }
         finally
         {
@@ -196,7 +182,9 @@ public class IssuesViewModel : ViewModelBase
         {
             IsBusy = true;
 
-            var result = await _libraryService.ReturnBookAsync(SelectedIssue.IssueId, IssuedBy);
+            var result = await _libraryService.ReturnBookAsync(
+                SelectedIssue.IssueId,
+                AuthenticationService.CurrentUser?.FullName ?? "Utilizator");
 
             if (result.Success)
             {
@@ -211,7 +199,7 @@ public class IssuesViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            SetStatus($"Eroare la returnarea cărții: {ex.Message}", true);
+            SetStatus($"Eroare la returnarea cartii: {ex.Message}", true);
         }
         finally
         {
@@ -224,15 +212,20 @@ public class IssuesViewModel : ViewModelBase
         try
         {
             IsBusy = true;
-            var issues = await _libraryService.GetActiveIssuesAsync();
-            
-            BookIssues.Clear();
-            foreach (var issue in issues)
-            {
-                BookIssues.Add(issue);
-            }
 
-            SetStatus($"Se afișează {issues.Count} împrumuturi active");
+            if (CurrentMemberId.HasValue)
+            {
+                var allIssues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
+                var activeIssues = allIssues.Where(i => !i.IsReturned).ToList();
+
+                BookIssues.Clear();
+                foreach (var issue in activeIssues.OrderByDescending(i => i.IssueDate))
+                {
+                    BookIssues.Add(issue);
+                }
+
+                SetStatus($"Se afiseaza {activeIssues.Count} imprumuturi active");
+            }
         }
         catch (Exception ex)
         {
@@ -249,15 +242,20 @@ public class IssuesViewModel : ViewModelBase
         try
         {
             IsBusy = true;
-            var issues = await _libraryService.GetOverdueIssuesAsync();
-            
-            BookIssues.Clear();
-            foreach (var issue in issues)
-            {
-                BookIssues.Add(issue);
-            }
 
-            SetStatus($"Se afișează {issues.Count} împrumuturi restante");
+            if (CurrentMemberId.HasValue)
+            {
+                var allIssues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
+                var overdueIssues = allIssues.Where(i => i.IsOverdue).ToList();
+
+                BookIssues.Clear();
+                foreach (var issue in overdueIssues.OrderByDescending(i => i.DaysOverdue))
+                {
+                    BookIssues.Add(issue);
+                }
+
+                SetStatus($"Se afiseaza {overdueIssues.Count} imprumuturi intarziate");
+            }
         }
         catch (Exception ex)
         {

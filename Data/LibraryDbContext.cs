@@ -14,6 +14,7 @@ public class LibraryDbContext : DbContext
     public DbSet<Book> Books { get; set; }
     public DbSet<BookIssue> BookIssues { get; set; }
     public DbSet<Fine> Fines { get; set; }
+    public DbSet<User> Users { get; set; }
 
     public LibraryDbContext() { }
 
@@ -95,11 +96,25 @@ public class LibraryDbContext : DbContext
         modelBuilder.Entity<Fine>(entity =>
         {
             entity.HasKey(e => e.FineId);
-            
+
             entity.HasOne(e => e.BookIssue)
                 .WithOne(bi => bi.Fine)
                 .HasForeignKey<Fine>(e => e.IssueId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure User
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId);
+            entity.HasIndex(e => e.Username).IsUnique();
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.Role).HasConversion<string>();
+            entity.Property(e => e.UserMemberType).HasConversion<string>();
+            entity.HasOne(e => e.Member)
+                .WithMany()
+                .HasForeignKey(e => e.MemberId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Seed initial data
@@ -108,15 +123,20 @@ public class LibraryDbContext : DbContext
 
     private void SeedData(ModelBuilder modelBuilder)
     {
-        // Date inițiale - cărți (prețuri în Lei RON)
+        // Date inițiale - cărți populare românești
         modelBuilder.Entity<Book>().HasData(
-            new Book { BookId = 1, BookCode = "CS101-001", ISBN = "978-0-13-468599-1", Title = "Clean Code", Author = "Robert C. Martin", Publisher = "Pearson", PublicationYear = 2008, Category = "Programare", CopyNumber = 1, Price = 180.00m },
-            new Book { BookId = 2, BookCode = "CS101-002", ISBN = "978-0-13-468599-1", Title = "Clean Code", Author = "Robert C. Martin", Publisher = "Pearson", PublicationYear = 2008, Category = "Programare", CopyNumber = 2, Price = 180.00m },
-            new Book { BookId = 3, BookCode = "CS102-001", ISBN = "978-0-596-51774-8", Title = "JavaScript: The Good Parts", Author = "Douglas Crockford", Publisher = "O'Reilly", PublicationYear = 2008, Category = "Programare", CopyNumber = 1, Price = 120.00m },
-            new Book { BookId = 4, BookCode = "CS103-001", ISBN = "978-0-13-235088-4", Title = "The Pragmatic Programmer", Author = "David Thomas, Andrew Hunt", Publisher = "Addison-Wesley", PublicationYear = 2019, Category = "Programare", CopyNumber = 1, Price = 200.00m },
-            new Book { BookId = 5, BookCode = "DB101-001", ISBN = "978-0-13-289632-1", Title = "Database System Concepts", Author = "Abraham Silberschatz", Publisher = "McGraw-Hill", PublicationYear = 2020, Category = "Baze de Date", CopyNumber = 1, Price = 320.00m },
-            new Book { BookId = 6, BookCode = "DB101-002", ISBN = "978-0-13-289632-1", Title = "Database System Concepts", Author = "Abraham Silberschatz", Publisher = "McGraw-Hill", PublicationYear = 2020, Category = "Baze de Date", CopyNumber = 2, Price = 320.00m },
-            new Book { BookId = 7, BookCode = "NET101-001", ISBN = "978-1-4842-8873-4", Title = "Pro C# 10 with .NET 6", Author = "Andrew Troelsen", Publisher = "Apress", PublicationYear = 2022, Category = "Programare", CopyNumber = 1, Price = 260.00m }
+            new Book { BookId = 1, BookCode = "1", ISBN = "978-973-50-1234-1", Title = "Ion", Author = "Liviu Rebreanu", Publisher = "Editura Litera", PublicationYear = 1920, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 2, BookCode = "2", ISBN = "978-973-50-1234-1", Title = "Ion", Author = "Liviu Rebreanu", Publisher = "Editura Litera", PublicationYear = 1920, Category = "Literatură Română", CopyNumber = 2 },
+            new Book { BookId = 3, BookCode = "3", ISBN = "978-973-50-2345-2", Title = "Enigma Otiliei", Author = "George Călinescu", Publisher = "Editura Humanitas", PublicationYear = 1938, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 4, BookCode = "4", ISBN = "978-973-50-3456-3", Title = "Moromeții", Author = "Marin Preda", Publisher = "Editura Cartea Românească", PublicationYear = 1955, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 5, BookCode = "5", ISBN = "978-973-50-4567-4", Title = "Pădurea Spânzuraților", Author = "Liviu Rebreanu", Publisher = "Editura Litera", PublicationYear = 1922, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 6, BookCode = "6", ISBN = "978-973-50-4567-4", Title = "Pădurea Spânzuraților", Author = "Liviu Rebreanu", Publisher = "Editura Litera", PublicationYear = 1922, Category = "Literatură Română", CopyNumber = 2 },
+            new Book { BookId = 7, BookCode = "7", ISBN = "978-973-50-5678-5", Title = "Maitreyi", Author = "Mircea Eliade", Publisher = "Editura Humanitas", PublicationYear = 1933, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 8, BookCode = "8", ISBN = "978-973-50-6789-6", Title = "Ultima Noapte de Dragoste, Întâia Noapte de Război", Author = "Camil Petrescu", Publisher = "Editura Polirom", PublicationYear = 1930, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 9, BookCode = "9", ISBN = "978-973-50-7890-7", Title = "Baltagul", Author = "Mihail Sadoveanu", Publisher = "Editura Litera", PublicationYear = 1930, Category = "Literatură Română", CopyNumber = 1 },
+            new Book { BookId = 10, BookCode = "10", ISBN = "978-973-50-8901-8", Title = "Poezii", Author = "Mihai Eminescu", Publisher = "Editura Cartea Românească", PublicationYear = 1883, Category = "Poezie", CopyNumber = 1 },
+            new Book { BookId = 11, BookCode = "11", ISBN = "978-973-50-8901-8", Title = "Poezii", Author = "Mihai Eminescu", Publisher = "Editura Cartea Românească", PublicationYear = 1883, Category = "Poezie", CopyNumber = 2 },
+            new Book { BookId = 12, BookCode = "12", ISBN = "978-973-50-9012-9", Title = "O Scrisoare Pierdută", Author = "Ion Luca Caragiale", Publisher = "Editura Humanitas", PublicationYear = 1884, Category = "Teatru", CopyNumber = 1 }
         );
 
         // Date inițiale - studenți (facultăți din București)
@@ -134,5 +154,9 @@ public class LibraryDbContext : DbContext
             new Faculty { MemberId = 5, MembershipId = "PROF-2024-002", FirstName = "Mihai", LastName = "Georgescu", Email = "mihai.georgescu@unibuc.ro", FacultyId = "F002", Department = "Facultatea de Automatică și Calculatoare", Designation = "Conferențiar", MemberType = "Faculty" },
             new Faculty { MemberId = 8, MembershipId = "PROF-2024-003", FirstName = "Carmen", LastName = "Radu", Email = "carmen.radu@unibuc.ro", FacultyId = "F003", Department = "Facultatea de Cibernetică, Statistică și Informatică Economică", Designation = "Lector", MemberType = "Faculty" }
         );
+
+        // Utilizatorii sunt creați dinamic prin AuthenticationService
+        // Admin-ul se creează automat la primul start prin EnsureAdminExistsAsync()
+        // Utilizatorii normali se înregistrează prin interfața de login/signup
     }
 }

@@ -7,7 +7,7 @@ using LibraryManagementSystem.Services;
 namespace LibraryManagementSystem.ViewModels;
 
 /// <summary>
-/// ViewModel for the dashboard showing library statistics
+/// ViewModel for the dashboard showing user's personal statistics
 /// </summary>
 public class DashboardViewModel : ViewModelBase
 {
@@ -16,94 +16,116 @@ public class DashboardViewModel : ViewModelBase
     public DashboardViewModel(LibraryService libraryService)
     {
         _libraryService = libraryService;
-        RecentIssues = new ObservableCollection<BookIssue>();
-        OverdueBooks = new ObservableCollection<BookIssue>();
+        MyRecentIssues = new ObservableCollection<BookIssue>();
+        MyOverdueBooks = new ObservableCollection<BookIssue>();
 
         LoadDataCommand = new AsyncRelayCommand(async _ => await LoadDataAsync());
     }
 
     #region Properties
 
-    public ObservableCollection<BookIssue> RecentIssues { get; }
-    public ObservableCollection<BookIssue> OverdueBooks { get; }
+    public ObservableCollection<BookIssue> MyRecentIssues { get; }
+    public ObservableCollection<BookIssue> MyOverdueBooks { get; }
 
-    private int _totalBooks;
-    public int TotalBooks
+    /// <summary>
+    /// ID-ul membrului utilizatorului curent
+    /// </summary>
+    private int? CurrentMemberId => AuthenticationService.CurrentUserMemberId;
+
+    /// <summary>
+    /// Mesaj de bun venit personalizat
+    /// </summary>
+    public string WelcomeMessage
     {
-        get => _totalBooks;
-        set => SetProperty(ref _totalBooks, value);
+        get
+        {
+            var user = AuthenticationService.CurrentUser;
+            if (user == null) return "";
+            return $"Bine ai venit, {user.FullName}!";
+        }
     }
 
-    private int _availableBooks;
-    public int AvailableBooks
+    /// <summary>
+    /// Tipul de membru al utilizatorului
+    /// </summary>
+    public string MemberTypeDisplay
     {
-        get => _availableBooks;
-        set => SetProperty(ref _availableBooks, value);
+        get
+        {
+            var user = AuthenticationService.CurrentUser;
+            if (user == null) return "";
+            return user.UserMemberType == MemberType.Professor ? "Profesor" : "Student";
+        }
     }
 
-    private int _totalMembers;
-    public int TotalMembers
+    /// <summary>
+    /// Info despre limita de carti
+    /// </summary>
+    public string MaxBooksInfo
     {
-        get => _totalMembers;
-        set => SetProperty(ref _totalMembers, value);
+        get
+        {
+            var user = AuthenticationService.CurrentUser;
+            if (user == null) return "";
+            return $"Maxim {user.MaxBooksAllowed} carti";
+        }
     }
 
-    private int _totalStudents;
-    public int TotalStudents
+    /// <summary>
+    /// Info despre durata maxima
+    /// </summary>
+    public string MaxDaysInfo
     {
-        get => _totalStudents;
-        set => SetProperty(ref _totalStudents, value);
+        get
+        {
+            var user = AuthenticationService.CurrentUser;
+            if (user == null) return "";
+            return $"Durata maxima: {user.MaxIssueDays} zile";
+        }
     }
 
-    private int _totalFaculty;
-    public int TotalFaculty
+    /// <summary>
+    /// Text pentru limita de carti
+    /// </summary>
+    public string MyBooksLimit
     {
-        get => _totalFaculty;
-        set => SetProperty(ref _totalFaculty, value);
+        get
+        {
+            var user = AuthenticationService.CurrentUser;
+            if (user == null) return "";
+            return $"din maxim {user.MaxBooksAllowed}";
+        }
     }
 
-    private int _activeIssues;
-    public int ActiveIssues
+    private int _myActiveIssues;
+    public int MyActiveIssues
     {
-        get => _activeIssues;
-        set => SetProperty(ref _activeIssues, value);
+        get => _myActiveIssues;
+        set => SetProperty(ref _myActiveIssues, value);
     }
 
-    private int _overdueCount;
-    public int OverdueCount
+    private int _myOverdueCount;
+    public int MyOverdueCount
     {
-        get => _overdueCount;
-        set => SetProperty(ref _overdueCount, value);
+        get => _myOverdueCount;
+        set
+        {
+            if (SetProperty(ref _myOverdueCount, value))
+            {
+                OnPropertyChanged(nameof(HasOverdueBooks));
+            }
+        }
     }
 
-    private decimal _pendingFines;
-    public decimal PendingFines
+    private decimal _myPendingFines;
+    public decimal MyPendingFines
     {
-        get => _pendingFines;
-        set => SetProperty(ref _pendingFines, value);
+        get => _myPendingFines;
+        set => SetProperty(ref _myPendingFines, value);
     }
 
-    private decimal _totalFinesCollected;
-    public decimal TotalFinesCollected
-    {
-        get => _totalFinesCollected;
-        set => SetProperty(ref _totalFinesCollected, value);
-    }
-
-    // Student vs Faculty comparison info
-    private string _studentLimits = "Students: Max 3 books for 14 days";
-    public string StudentLimits
-    {
-        get => _studentLimits;
-        set => SetProperty(ref _studentLimits, value);
-    }
-
-    private string _facultyLimits = "Faculty: Max 10 books for 30 days";
-    public string FacultyLimits
-    {
-        get => _facultyLimits;
-        set => SetProperty(ref _facultyLimits, value);
-    }
+    public bool HasOverdueBooks => MyOverdueCount > 0;
+    public bool HasNoActiveIssues => MyActiveIssues == 0;
 
     #endregion
 
@@ -121,40 +143,59 @@ public class DashboardViewModel : ViewModelBase
         {
             IsBusy = true;
 
-            // Get statistics
-            var stats = await _libraryService.GetStatisticsAsync();
+            // Refresh user info
+            OnPropertyChanged(nameof(WelcomeMessage));
+            OnPropertyChanged(nameof(MemberTypeDisplay));
+            OnPropertyChanged(nameof(MaxBooksInfo));
+            OnPropertyChanged(nameof(MaxDaysInfo));
+            OnPropertyChanged(nameof(MyBooksLimit));
 
-            TotalBooks = stats.TotalBooks;
-            AvailableBooks = stats.AvailableBooks;
-            TotalMembers = stats.TotalMembers;
-            TotalStudents = stats.TotalStudents;
-            TotalFaculty = stats.TotalFaculty;
-            ActiveIssues = stats.ActiveIssues;
-            OverdueCount = stats.OverdueBooks;
-            PendingFines = stats.PendingFines;
-            TotalFinesCollected = stats.TotalFinesCollected;
-
-            // Get recent issues
-            var issues = await _libraryService.GetActiveIssuesAsync();
-            RecentIssues.Clear();
-            foreach (var issue in issues.Take(5))
+            if (CurrentMemberId.HasValue)
             {
-                RecentIssues.Add(issue);
+                // Get user's issues
+                var myIssues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
+                var activeIssues = myIssues.Where(i => !i.IsReturned).ToList();
+                var overdueIssues = myIssues.Where(i => i.IsOverdue).ToList();
+
+                MyActiveIssues = activeIssues.Count;
+                MyOverdueCount = overdueIssues.Count;
+
+                // Get user's fines
+                var myFines = await _libraryService.GetMemberFinesAsync(CurrentMemberId.Value);
+                MyPendingFines = myFines
+                    .Where(f => f.Status == "Pending" || f.Status == "Partial")
+                    .Sum(f => f.RemainingAmount);
+
+                // Load recent active issues
+                MyRecentIssues.Clear();
+                foreach (var issue in activeIssues.OrderByDescending(i => i.IssueDate).Take(5))
+                {
+                    MyRecentIssues.Add(issue);
+                }
+
+                // Load overdue books
+                MyOverdueBooks.Clear();
+                foreach (var issue in overdueIssues.OrderByDescending(i => i.DaysOverdue))
+                {
+                    MyOverdueBooks.Add(issue);
+                }
+
+                OnPropertyChanged(nameof(HasNoActiveIssues));
+            }
+            else
+            {
+                MyActiveIssues = 0;
+                MyOverdueCount = 0;
+                MyPendingFines = 0;
+                MyRecentIssues.Clear();
+                MyOverdueBooks.Clear();
             }
 
-            // Get overdue books
-            var overdue = await _libraryService.GetOverdueIssuesAsync();
-            OverdueBooks.Clear();
-            foreach (var issue in overdue.Take(5))
-            {
-                OverdueBooks.Add(issue);
-            }
-
-            SetStatus("Panoul principal actualizat");
+            SetStatus("Panoul actualizat");
         }
         catch (Exception ex)
         {
-            SetStatus($"Eroare la încărcarea panoului principal: {ex.Message}", true);
+            SetStatus($"Eroare la incarcarea panoului: {ex.Message}", true);
         }
         finally
         {

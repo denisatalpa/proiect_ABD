@@ -1,82 +1,73 @@
 <UserControl x:Class="LibraryManagementSystem.Views.IssuesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:LibraryManagementSystem.Converters"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="900">
-    
+
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
         <converters:OverdueToColorConverter x:Key="OverdueToColor"/>
     </UserControl.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Issue Book Panel -->
-        <Border Grid.Row="0" 
-                Background="White" 
-                CornerRadius="8" 
+        <Border Grid.Row="0"
+                Background="White"
+                CornerRadius="8"
                 Padding="15"
                 Margin="0,0,0,10">
             <StackPanel>
-                <TextBlock Text="📋 Împrumută / Returnează Cărți"
-                           FontSize="22"
+                <TextBlock Text="Imprumuta Carte"
+                           FontSize="20"
                            FontWeight="Bold"
                            Margin="0,0,0,15"/>
-                
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <!-- Select Book -->
-                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                        <TextBlock Text="Selectează Carte Disponibilă:" FontWeight="SemiBold"/>
+                    <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                        <TextBlock Text="Selecteaza Carte Disponibila:" FontWeight="SemiBold"/>
                         <ComboBox ItemsSource="{Binding AvailableBooks}"
                                   SelectedItem="{Binding SelectedBookToIssue}"
                                   DisplayMemberPath="DisplayInfo"
                                   Padding="8"
                                   Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding CurrentUserInfo}"
+                                   Foreground="#2563EB"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Margin="0,8,0,0"/>
                     </StackPanel>
-                    
-                    <!-- Select Member -->
-                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                        <TextBlock Text="Selectează Membru:" FontWeight="SemiBold"/>
-                        <ComboBox ItemsSource="{Binding Members}"
-                                  SelectedItem="{Binding SelectedMember}"
-                                  DisplayMemberPath="FullName"
-                                  Padding="8"
-                                  Margin="0,5,0,0"/>
-                        <TextBlock Text="{Binding MemberInfo}" 
-                                   Foreground="Gray" 
-                                   FontSize="11"
-                                   Margin="0,3,0,0"/>
-                    </StackPanel>
-                    
+
                     <!-- Issue Button -->
-                    <Button Grid.Column="2"
-                            Content="📖 Împrumută Carte"
+                    <Button Grid.Column="1"
+                            Content="Imprumuta Carte"
                             Command="{Binding IssueBookCommand}"
-                            Padding="20,10"
+                            Padding="25,12"
                             Background="#4CAF50"
                             Foreground="White"
                             FontSize="14"
+                            FontWeight="SemiBold"
                             VerticalAlignment="Center"/>
                 </Grid>
             </StackPanel>
         </Border>
-        
+
         <!-- Issues List -->
-        <Border Grid.Row="1" 
-                Background="White" 
+        <Border Grid.Row="1"
+                Background="White"
                 CornerRadius="8"
                 Padding="15">
             <Grid>
@@ -85,36 +76,32 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                
-                <!-- Filter Buttons -->
-                <StackPanel Grid.Row="0" 
-                            Orientation="Horizontal" 
+
+                <!-- Header and Filter Buttons -->
+                <StackPanel Grid.Row="0"
+                            Orientation="Horizontal"
                             Margin="0,0,0,10">
-                    <TextBlock Text="Istoric Împrumuturi"
+                    <TextBlock Text="Istoricul Imprumuturilor Mele"
                                FontSize="18"
                                FontWeight="Bold"
                                VerticalAlignment="Center"
                                Margin="0,0,20,0"/>
-                    <Button Content="Toate Împrumuturile"
+                    <Button Content="Toate"
                             Command="{Binding ShowAllIssuesCommand}"
                             Padding="15,8"
                             Margin="0,0,5,0"/>
-                    <Button Content="Doar Active"
+                    <Button Content="Active"
                             Command="{Binding ShowActiveIssuesCommand}"
                             Padding="15,8"
                             Margin="0,0,5,0"/>
-                    <Button Content="⚠️ Doar Întârziate"
+                    <Button Content="Intarziate"
                             Command="{Binding ShowOverdueIssuesCommand}"
                             Padding="15,8"
                             Background="#FFF3E0"/>
-                    <Button Content="🔄 Reîmprospătează"
-                            Command="{Binding RefreshBooksCommand}"
-                            Padding="15,8"
-                            Margin="20,0,0,0"/>
                 </StackPanel>
-                
+
                 <!-- Issues DataGrid -->
-                <DataGrid Grid.Row="1" 
+                <DataGrid Grid.Row="1"
                           ItemsSource="{Binding BookIssues}"
                           SelectedItem="{Binding SelectedIssue}"
                           AutoGenerateColumns="False"
@@ -123,31 +110,25 @@
                           GridLinesVisibility="Horizontal"
                           CanUserAddRows="False">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID Împrumut"
+                        <DataGridTextColumn Header="ID"
                                             Binding="{Binding IssueId}"
-                                            Width="70"/>
+                                            Width="50"/>
                         <DataGridTextColumn Header="Carte"
                                             Binding="{Binding Book.Title}"
                                             Width="*"/>
-                        <DataGridTextColumn Header="Cod Carte"
+                        <DataGridTextColumn Header="Cod"
                                             Binding="{Binding Book.BookCode}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Membru"
-                                            Binding="{Binding Member.FullName}"
-                                            Width="130"/>
-                        <DataGridTextColumn Header="Tip"
-                                            Binding="{Binding Member.MemberType}"
-                                            Width="70"/>
-                        <DataGridTextColumn Header="Data Împrumut"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="Data Imprumut"
                                             Binding="{Binding IssueDate, StringFormat='dd/MM/yyyy'}"
-                                            Width="90"/>
-                        <DataGridTextColumn Header="Data Scadență"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Data Scadenta"
                                             Binding="{Binding DueDate, StringFormat='dd/MM/yyyy'}"
-                                            Width="90"/>
+                                            Width="100"/>
                         <DataGridTextColumn Header="Durata"
                                             Binding="{Binding IssueDuration, StringFormat='{}{0} zile'}"
                                             Width="70"/>
-                        <DataGridTemplateColumn Header="Status" Width="120">
+                        <DataGridTemplateColumn Header="Status" Width="100">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding StatusDisplay}"
@@ -158,28 +139,22 @@
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Data Returnare"
                                             Binding="{Binding ReturnDate, StringFormat='dd/MM/yyyy'}"
-                                            Width="90"/>
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
-                
+
                 <!-- Return Book Button -->
-                <StackPanel Grid.Row="2" 
-                            Orientation="Horizontal" 
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             Margin="0,10,0,0">
-                    <TextBlock Text="Procesat de:"
-                               VerticalAlignment="Center"
-                               Margin="0,0,10,0"/>
-                    <TextBox Text="{Binding IssuedBy, UpdateSourceTrigger=PropertyChanged}"
-                             Width="150"
-                             Padding="8"
-                             Margin="0,0,10,0"/>
-                    <Button Content="📥 Returnează Cartea Selectată"
+                    <Button Content="Returneaza Cartea Selectata"
                             Command="{Binding ReturnBookCommand}"
-                            Padding="20,10"
+                            Padding="25,12"
                             Background="#2196F3"
                             Foreground="White"
-                            FontSize="14"/>
+                            FontSize="14"
+                            FontWeight="SemiBold"/>
                 </StackPanel>
             </Grid>
         </Border>

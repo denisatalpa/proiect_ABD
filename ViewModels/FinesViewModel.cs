@@ -64,6 +64,11 @@ public class FinesViewModel : ViewModelBase
         set => SetProperty(ref _totalPendingFines, value);
     }
 
+    /// <summary>
+    /// Verifică dacă utilizatorul curent este administrator
+    /// </summary>
+    public bool IsAdmin => AuthenticationService.IsAdmin;
+
     #endregion
 
     #region Commands

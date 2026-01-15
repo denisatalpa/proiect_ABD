@@ -68,12 +68,9 @@ public class Book
     /// </summary>
     public bool IsActive { get; set; } = true;
 
-    [Column(TypeName = "decimal(10,2)")]
-    public decimal Price { get; set; }
-
     // Navigation property
     public virtual ICollection<BookIssue> BookIssues { get; set; } = new List<BookIssue>();
 
     [NotMapped]
-    public string DisplayInfo => $"{Title} by {Author} (Copy #{CopyNumber})";
+    public string DisplayInfo => $"{Title} - {Author} (Exemplar #{CopyNumber})";
 }

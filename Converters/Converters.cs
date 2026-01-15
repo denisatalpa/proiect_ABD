@@ -10,11 +10,16 @@ namespace LibraryManagementSystem.Converters;
 /// </summary>
 public class BoolToVisibilityConverter : IValueConverter
 {
+    /// <summary>
+    /// Dacă este true, inversează vizibilitatea (true -> Collapsed, false -> Visible)
+    /// </summary>
+    public bool InvertVisibility { get; set; }
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is bool boolValue)
         {
-            bool invert = parameter?.ToString()?.ToLower() == "invert";
+            bool invert = InvertVisibility || parameter?.ToString()?.ToLower() == "invert";
             return (boolValue ^ invert) ? Visibility.Visible : Visibility.Collapsed;
         }
         return Visibility.Collapsed;
@@ -27,15 +32,15 @@ public class BoolToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts null to Visibility (null = Collapsed, not null = Visible)
+/// Converts null/empty string to Visibility (null/empty = Collapsed, not null = Visible)
 /// </summary>
 public class NullToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         bool invert = parameter?.ToString()?.ToLower() == "invert";
-        bool isNull = value == null;
-        return (isNull ^ invert) ? Visibility.Collapsed : Visibility.Visible;
+        bool isNullOrEmpty = value == null || (value is string str && string.IsNullOrWhiteSpace(str));
+        return (isNullOrEmpty ^ invert) ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

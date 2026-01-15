@@ -13,22 +13,27 @@ namespace LibraryManagementSystem.ViewModels;
 public class MainViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;
+    private readonly AuthenticationService _authService;
     private readonly LibraryDbContext _context;
 
     public MainViewModel()
     {
         _context = new LibraryDbContext();
         _libraryService = new LibraryService(_context);
+        _authService = new AuthenticationService(_context);
 
         // Initialize sub-ViewModels
+        LoginViewModel = new LoginViewModel();
+        LoginViewModel.LoginSuccessful += OnLoginSuccessful;
+
         BooksViewModel = new BooksViewModel(_libraryService);
         MembersViewModel = new MembersViewModel(_libraryService);
         IssuesViewModel = new IssuesViewModel(_libraryService);
         FinesViewModel = new FinesViewModel(_libraryService);
         DashboardViewModel = new DashboardViewModel(_libraryService);
 
-        // Set initial view
-        CurrentViewModel = DashboardViewModel;
+        // Set initial view to Login
+        CurrentViewModel = LoginViewModel;
 
         // Initialize commands
         NavigateToDashboardCommand = new RelayCommand(_ => NavigateTo(DashboardViewModel));
@@ -36,9 +41,29 @@ public class MainViewModel : ViewModelBase
         NavigateToMembersCommand = new RelayCommand(_ => NavigateTo(MembersViewModel));
         NavigateToIssuesCommand = new RelayCommand(_ => NavigateTo(IssuesViewModel));
         NavigateToFinesCommand = new RelayCommand(_ => NavigateTo(FinesViewModel));
+        LogoutCommand = new RelayCommand(_ => Logout());
 
         // Ensure database is created
         InitializeDatabaseAsync();
+    }
+
+    private void OnLoginSuccessful(object? sender, EventArgs e)
+    {
+        IsAuthenticated = true;
+        OnPropertyChanged(nameof(IsAdmin));
+        OnPropertyChanged(nameof(CurrentUserName));
+        OnPropertyChanged(nameof(CurrentUserRole));
+        NavigateTo(DashboardViewModel);
+    }
+
+    private void Logout()
+    {
+        _authService.Logout();
+        IsAuthenticated = false;
+        OnPropertyChanged(nameof(IsAdmin));
+        OnPropertyChanged(nameof(CurrentUserName));
+        OnPropertyChanged(nameof(CurrentUserRole));
+        CurrentViewModel = LoginViewModel;
     }
 
     private async void InitializeDatabaseAsync()
@@ -61,6 +86,7 @@ public class MainViewModel : ViewModelBase
 
     #region ViewModels
 
+    public LoginViewModel LoginViewModel { get; }
     public BooksViewModel BooksViewModel { get; }
     public MembersViewModel MembersViewModel { get; }
     public IssuesViewModel IssuesViewModel { get; }
@@ -76,6 +102,32 @@ public class MainViewModel : ViewModelBase
 
     #endregion
 
+    #region Authentication Properties
+
+    private bool _isAuthenticated;
+    public bool IsAuthenticated
+    {
+        get => _isAuthenticated;
+        set => SetProperty(ref _isAuthenticated, value);
+    }
+
+    /// <summary>
+    /// Verifică dacă utilizatorul curent este administrator
+    /// </summary>
+    public bool IsAdmin => AuthenticationService.IsAdmin;
+
+    /// <summary>
+    /// Numele utilizatorului curent
+    /// </summary>
+    public string CurrentUserName => AuthenticationService.CurrentUser?.FullName ?? "";
+
+    /// <summary>
+    /// Rolul utilizatorului curent
+    /// </summary>
+    public string CurrentUserRole => AuthenticationService.CurrentUser?.Role.ToString() ?? "";
+
+    #endregion
+
     #region Navigation Commands
 
     public ICommand NavigateToDashboardCommand { get; }
@@ -83,6 +135,7 @@ public class MainViewModel : ViewModelBase
     public ICommand NavigateToMembersCommand { get; }
     public ICommand NavigateToIssuesCommand { get; }
     public ICommand NavigateToFinesCommand { get; }
+    public ICommand LogoutCommand { get; }
 
     private void NavigateTo(ViewModelBase viewModel)
     {

@@ -33,7 +33,7 @@
                 </Grid.RowDefinitions>
                 
                 <TextBlock Grid.Row="0"
-                           Text="💰 Gestionare Amenzi"
+                           Text="Gestionare Amenzi"
                            FontSize="22"
                            FontWeight="Bold"
                            Margin="0,0,0,15"/>
@@ -46,7 +46,7 @@
                             Command="{Binding ShowAllFinesCommand}"
                             Padding="15,8"
                             Margin="0,0,5,0"/>
-                    <Button Content="⚠️ Doar Neachitate"
+                    <Button Content="Doar Neachitate"
                             Command="{Binding ShowPendingFinesCommand}"
                             Padding="15,8"
                             Background="#FFF3E0"/>
@@ -155,7 +155,7 @@
                          FontSize="16"
                          Margin="0,5,0,15"/>
 
-                <Button Content="💵 Înregistrează Plată"
+                <Button Content="Inregistreaza Plata"
                         Command="{Binding PayFineCommand}"
                         Padding="15,10"
                         Background="#4CAF50"
@@ -163,12 +163,13 @@
                         FontSize="14"
                         Margin="0,0,0,20"/>
                 
-                <!-- Waive Fine Section -->
-                <Border BorderBrush="#E0E0E0" 
-                        BorderThickness="0,1,0,0" 
-                        Padding="0,15,0,0">
+                <!-- Waive Fine Section (doar pentru Admin) -->
+                <Border BorderBrush="#E0E0E0"
+                        BorderThickness="0,1,0,0"
+                        Padding="0,15,0,0"
+                        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel>
-                        <TextBlock Text="Anulează Amendă"
+                        <TextBlock Text="Anulează Amendă (Admin)"
                                    FontSize="16"
                                    FontWeight="Bold"
                                    Margin="0,0,0,10"/>
@@ -181,7 +182,7 @@
                                  AcceptsReturn="True"
                                  Margin="0,5,0,10"/>
 
-                        <Button Content="🚫 Anulează Amendă"
+                        <Button Content="Anulează Amendă"
                                 Command="{Binding WaiveFineCommand}"
                                 Padding="15,10"
                                 Background="#FF9800"
@@ -195,7 +196,7 @@
                         CornerRadius="5"
                         Margin="0,20,0,0">
                     <StackPanel>
-                        <TextBlock Text="ℹ️ Informații Amendă" FontWeight="Bold"/>
+                        <TextBlock Text="Informatii Amenda" FontWeight="Bold"/>
                         <TextBlock Text="Tarif Amendă: 1 Leu pe zi" Margin="0,5,0,0"/>
                         <TextBlock Text="Se aplică când cartea este returnată după data scadenței"
                                    TextWrapping="Wrap"

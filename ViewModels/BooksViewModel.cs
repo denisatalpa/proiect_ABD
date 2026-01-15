@@ -6,6 +6,8 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
+// Extensie pentru a verifica dacă utilizatorul curent este admin
+
 /// <summary>
 /// ViewModel for managing books
 /// </summary>
@@ -46,7 +48,6 @@ public class BooksViewModel : ViewModelBase
                 EditISBN = value.ISBN;
                 EditPublisher = value.Publisher;
                 EditCategory = value.Category;
-                EditPrice = value.Price;
                 EditPublicationYear = value.PublicationYear;
                 IsNewBook = false;
             }
@@ -96,13 +97,6 @@ public class BooksViewModel : ViewModelBase
         set => SetProperty(ref _editCategory, value);
     }
 
-    private decimal _editPrice;
-    public decimal EditPrice
-    {
-        get => _editPrice;
-        set => SetProperty(ref _editPrice, value);
-    }
-
     private int? _editPublicationYear;
     public int? EditPublicationYear
     {
@@ -116,6 +110,11 @@ public class BooksViewModel : ViewModelBase
         get => _isNewBook;
         set => SetProperty(ref _isNewBook, value);
     }
+
+    /// <summary>
+    /// Verifică dacă utilizatorul curent este administrator
+    /// </summary>
+    public bool IsAdmin => AuthenticationService.IsAdmin;
 
     #endregion
 
@@ -166,7 +165,6 @@ public class BooksViewModel : ViewModelBase
         EditISBN = string.Empty;
         EditPublisher = string.Empty;
         EditCategory = string.Empty;
-        EditPrice = 0;
         EditPublicationYear = DateTime.Now.Year;
         IsNewBook = true;
         SetStatus("Pregătit pentru adăugarea unei cărți noi");
@@ -191,7 +189,6 @@ public class BooksViewModel : ViewModelBase
                 ISBN = EditISBN,
                 Publisher = EditPublisher,
                 Category = EditCategory,
-                Price = EditPrice,
                 PublicationYear = EditPublicationYear
             };
 
@@ -229,7 +226,6 @@ public class BooksViewModel : ViewModelBase
             SelectedBook.Author = EditAuthor;
             SelectedBook.Publisher = EditPublisher;
             SelectedBook.Category = EditCategory;
-            SelectedBook.Price = EditPrice;
             SelectedBook.PublicationYear = EditPublicationYear;
 
             await _libraryService.UpdateBookAsync(SelectedBook);

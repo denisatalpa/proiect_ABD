@@ -10,12 +10,16 @@
         Title="Sistem de Management Bibliotecă"
         Height="700" Width="1100"
         WindowStartupLocation="CenterScreen">
-    
+
     <Window.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:BoolToVisibilityConverter x:Key="InverseBoolToVisibility" InvertVisibility="True"/>
         <converters:StatusToColorConverter x:Key="StatusToColor"/>
-        
+
         <!-- DataTemplates for ViewModels -->
+        <DataTemplate DataType="{x:Type vm:LoginViewModel}">
+            <views:LoginView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
             <views:DashboardView/>
         </DataTemplate>
@@ -55,89 +59,130 @@
     
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
-        <!-- Sidebar Navigation -->
-        <Border Grid.Column="0" Background="#1565C0">
-            <StackPanel Margin="10">
-                <!-- Logo/Title -->
-                <TextBlock Text="📚 Bibliotecă"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           Foreground="White"
-                           HorizontalAlignment="Center"
-                           Margin="0,20,0,30"/>
 
-                <!-- Navigation Buttons -->
-                <Button Content="🏠 Panou Principal"
-                        Command="{Binding NavigateToDashboardCommand}"
-                        Style="{StaticResource NavButtonStyle}"/>
+        <!-- Sidebar Navigation (doar când este autentificat) -->
+        <Border Grid.Column="0" Background="#1565C0" Width="200"
+                Visibility="{Binding IsAuthenticated, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <Button Content="📖 Cărți"
-                        Command="{Binding NavigateToBooksCommand}"
-                        Style="{StaticResource NavButtonStyle}"/>
+                <StackPanel Grid.Row="0" Margin="10">
+                    <!-- Logo/Title -->
+                    <TextBlock Text="Bibliotecă"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               Margin="0,20,0,5"/>
 
-                <Button Content="👥 Membri"
-                        Command="{Binding NavigateToMembersCommand}"
-                        Style="{StaticResource NavButtonStyle}"/>
+                    <!-- User Info -->
+                    <Border Background="#0D47A1" CornerRadius="5" Padding="10" Margin="0,5,0,20">
+                        <StackPanel>
+                            <TextBlock Text="{Binding CurrentUserName}"
+                                       Foreground="White"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"/>
+                            <Border Background="#2196F3" CornerRadius="3" Padding="5,2" Margin="0,5,0,0" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding CurrentUserRole}"
+                                           Foreground="White"
+                                           FontSize="10"
+                                           FontWeight="Bold"/>
+                            </Border>
+                        </StackPanel>
+                    </Border>
 
-                <Button Content="📋 Împrumut/Returnare"
-                        Command="{Binding NavigateToIssuesCommand}"
-                        Style="{StaticResource NavButtonStyle}"/>
+                    <!-- Navigation Buttons -->
+                    <Button Content="Panou Principal"
+                            Command="{Binding NavigateToDashboardCommand}"
+                            Style="{StaticResource NavButtonStyle}"/>
 
-                <Button Content="💰 Amenzi"
-                        Command="{Binding NavigateToFinesCommand}"
-                        Style="{StaticResource NavButtonStyle}"/>
-                
-                <!-- Info Section -->
-                <Border Margin="0,30,0,0"
-                        Padding="10"
-                        Background="#0D47A1"
-                        CornerRadius="5">
-                    <StackPanel>
-                        <TextBlock Text="Limite împrumut:"
-                                   Foreground="White"
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,5"/>
-                        <TextBlock Text="Studenți: 3 cărți, 14 zile"
-                                   Foreground="LightGray"
-                                   FontSize="11"/>
-                        <TextBlock Text="Profesori: 10 cărți, 30 zile"
-                                   Foreground="LightGray"
-                                   FontSize="11"/>
-                        <TextBlock Text="Amendă: 1 Leu/zi"
-                                   Foreground="LightGray"
-                                   FontSize="11"
-                                   Margin="0,5,0,0"/>
-                    </StackPanel>
+                    <Button Content="Cărți"
+                            Command="{Binding NavigateToBooksCommand}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="Membri"
+                            Command="{Binding NavigateToMembersCommand}"
+                            Style="{StaticResource NavButtonStyle}"
+                            Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}"/>
+
+                    <Button Content="Împrumut/Returnare"
+                            Command="{Binding NavigateToIssuesCommand}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <Button Content="Amenzi"
+                            Command="{Binding NavigateToFinesCommand}"
+                            Style="{StaticResource NavButtonStyle}"/>
+
+                    <!-- Info Section -->
+                    <Border Margin="0,20,0,0"
+                            Padding="10"
+                            Background="#0D47A1"
+                            CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Limite împrumut:"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       FontSize="11"
+                                       Margin="0,0,0,5"/>
+                            <TextBlock Text="Studenți: 3 cărți, 14 zile"
+                                       Foreground="LightGray"
+                                       FontSize="10"/>
+                            <TextBlock Text="Profesori: 10 cărți, 30 zile"
+                                       Foreground="LightGray"
+                                       FontSize="10"/>
+                            <TextBlock Text="Amendă: 1 Leu/zi"
+                                       Foreground="LightGray"
+                                       FontSize="10"
+                                       Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Logout Button -->
+                <Border Grid.Row="1" Margin="10,0,10,10">
+                    <Button Content="Deconectare"
+                            Command="{Binding LogoutCommand}"
+                            Background="#C62828"
+                            Foreground="White"
+                            Padding="10,8"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"/>
                 </Border>
-            </StackPanel>
+            </Grid>
         </Border>
-        
+
         <!-- Main Content Area -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
+
             <!-- Content -->
-            <ContentControl Grid.Row="0" 
+            <ContentControl Grid.Row="0"
                             Content="{Binding CurrentViewModel}"
                             Margin="10"/>
-            
-            <!-- Status Bar -->
-            <Border Grid.Row="1" 
-                    Background="#F5F5F5" 
-                    Padding="10,5">
+
+            <!-- Status Bar (doar când este autentificat) -->
+            <Border Grid.Row="1"
+                    Background="#F5F5F5"
+                    Padding="10,5"
+                    Visibility="{Binding IsAuthenticated, Converter={StaticResource BoolToVisibility}}">
                 <Grid>
-                    <TextBlock Text="{Binding CurrentViewModel.StatusMessage}" 
+                    <TextBlock Text="{Binding CurrentViewModel.StatusMessage}"
                                Foreground="{Binding CurrentViewModel.IsError, Converter={StaticResource StatusToColor}}"
                                VerticalAlignment="Center"/>
-                    <ProgressBar IsIndeterminate="True" 
-                                 Width="100" 
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="100"
                                  Height="10"
                                  HorizontalAlignment="Right"
                                  Visibility="{Binding CurrentViewModel.IsBusy, Converter={StaticResource BoolToVisibility}}"/>

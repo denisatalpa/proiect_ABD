@@ -1,0 +1,252 @@
+<UserControl x:Class="LibraryManagementSystem.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:LibraryManagementSystem.Converters">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:StatusToColorConverter x:Key="StatusToColor"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibility"/>
+
+        <Style x:Key="LoginTextBox" TargetType="TextBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="LoginPasswordBox" TargetType="PasswordBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="LoginButton" TargetType="Button">
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="LinkButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#2563EB"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="#F3F4F6">
+        <Border Background="White"
+                CornerRadius="10"
+                Padding="40"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="420"
+                MaxWidth="480">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="2" Opacity="0.15"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Header -->
+                <TextBlock Text="Sistem de Management"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="#1F2937"/>
+                <TextBlock Text="Biblioteca"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="#2563EB"
+                           Margin="0,0,0,25"/>
+
+                <!-- Login Form -->
+                <StackPanel Visibility="{Binding IsLoginMode, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="Autentificare"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#374151"
+                               Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Nume utilizator"
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource LoginTextBox}"
+                             Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Parola"
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,0,0,5"/>
+                    <PasswordBox x:Name="PasswordBox"
+                                 Style="{StaticResource LoginPasswordBox}"
+                                 Margin="0,0,0,18"
+                                 PasswordChanged="PasswordBox_PasswordChanged"/>
+
+                    <Button Content="Autentificare"
+                            Command="{Binding LoginCommand}"
+                            Style="{StaticResource LoginButton}"
+                            Margin="0,0,0,15"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Nu aveti cont? "
+                                   FontSize="12"
+                                   Foreground="#6B7280"
+                                   VerticalAlignment="Center"/>
+                        <Button Content="Inregistrati-va"
+                                Command="{Binding SwitchToRegisterCommand}"
+                                Style="{StaticResource LinkButton}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Register Form -->
+                <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="Inregistrare cont nou"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#374151"
+                               Margin="0,0,0,15"/>
+
+                    <!-- Tip cont -->
+                    <TextBlock Text="Tip cont *"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#374151"
+                               Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <RadioButton Content="Student"
+                                     IsChecked="{Binding IsStudent}"
+                                     Margin="0,0,25,0"
+                                     FontSize="13"/>
+                        <RadioButton Content="Profesor"
+                                     IsChecked="{Binding IsProfessor}"
+                                     FontSize="13"/>
+                    </StackPanel>
+
+                    <Border Background="#EFF6FF" CornerRadius="5" Padding="10" Margin="0,0,0,15">
+                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#1E40AF">
+                            <Run FontWeight="SemiBold">Limite imprumut:</Run>
+                            <LineBreak/>
+                            <Run>Student: maxim 3 carti, 14 zile</Run>
+                            <LineBreak/>
+                            <Run>Profesor: maxim 10 carti, 30 zile</Run>
+                        </TextBlock>
+                    </Border>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Prenume"
+                                       FontSize="12"
+                                       Foreground="#6B7280"
+                                       Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding RegisterFirstName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource LoginTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Nume"
+                                       FontSize="12"
+                                       Foreground="#6B7280"
+                                       Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding RegisterLastName, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource LoginTextBox}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Nume utilizator *"
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,12,0,5"/>
+                    <TextBox Text="{Binding RegisterUsername, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource LoginTextBox}"/>
+
+                    <TextBlock Text="Email *"
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,12,0,5"/>
+                    <TextBox Text="{Binding RegisterEmail, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource LoginTextBox}"/>
+
+                    <TextBlock Text="Parola *"
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,12,0,5"/>
+                    <PasswordBox x:Name="RegisterPasswordBox"
+                                 Style="{StaticResource LoginPasswordBox}"
+                                 PasswordChanged="RegisterPasswordBox_PasswordChanged"/>
+
+                    <TextBlock Text="Confirma parola *"
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,12,0,5"/>
+                    <PasswordBox x:Name="RegisterConfirmPasswordBox"
+                                 Style="{StaticResource LoginPasswordBox}"
+                                 Margin="0,0,0,18"
+                                 PasswordChanged="RegisterConfirmPasswordBox_PasswordChanged"/>
+
+                    <Button Content="Creaza cont"
+                            Command="{Binding RegisterCommand}"
+                            Style="{StaticResource LoginButton}"
+                            Margin="0,0,0,15"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Aveti deja cont? "
+                                   FontSize="12"
+                                   Foreground="#6B7280"
+                                   VerticalAlignment="Center"/>
+                        <Button Content="Autentificati-va"
+                                Command="{Binding SwitchToLoginCommand}"
+                                Style="{StaticResource LinkButton}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Status Message -->
+                <Border Margin="0,15,0,0"
+                        Padding="10"
+                        CornerRadius="5"
+                        Visibility="{Binding StatusMessage, Converter={StaticResource NullToVisibility}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                    <Setter Property="Background" Value="#FEE2E2"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsError}" Value="False">
+                                    <Setter Property="Background" Value="#D1FAE5"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{Binding IsError, Converter={StaticResource StatusToColor}}"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Loading Indicator -->
+                <ProgressBar IsIndeterminate="True"
+                             Height="4"
+                             Margin="0,15,0,0"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"/>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
