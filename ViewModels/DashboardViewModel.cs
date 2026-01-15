@@ -6,9 +6,9 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// ViewModel for the dashboard showing user's personal statistics
-/// </summary>
+
 public class DashboardViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;
@@ -18,6 +18,7 @@ public class DashboardViewModel : ViewModelBase
         _libraryService = libraryService;
         MyRecentIssues = new ObservableCollection<BookIssue>();
         MyOverdueBooks = new ObservableCollection<BookIssue>();
+        AllActiveMembers = new ObservableCollection<Member>();
 
         LoadDataCommand = new AsyncRelayCommand(async _ => await LoadDataAsync());
     }
@@ -26,41 +27,74 @@ public class DashboardViewModel : ViewModelBase
 
     public ObservableCollection<BookIssue> MyRecentIssues { get; }
     public ObservableCollection<BookIssue> MyOverdueBooks { get; }
+    public ObservableCollection<Member> AllActiveMembers { get; }
 
-    /// <summary>
+    
     /// ID-ul membrului utilizatorului curent
-    /// </summary>
+    
     private int? CurrentMemberId => AuthenticationService.CurrentUserMemberId;
 
-    /// <summary>
+    
+    /// Verifică dacă utilizatorul curent este administrator
+    
+    public bool IsAdmin => AuthenticationService.IsAdmin;
+
+    
+    /// Verifică dacă utilizatorul curent NU este administrator
+    
+    public bool IsNotAdmin => !IsAdmin;
+
+    
+    /// Titlul dashboard-ului
+    
+    public string DashboardTitle => IsAdmin ? "Panou Admin" : "Panoul Meu";
+
+    
+    /// Titlul secțiunii de împrumuturi active
+    
+    public string ActiveLoansTitle => IsAdmin ? "Toate Imprumuturile Active" : "Imprumuturile Mele Active";
+
+    
+    /// Titlul secțiunii de avertizare întârzieri
+    
+    public string OverdueWarningTitle => IsAdmin ? "Carti Intarziate in Biblioteca" : "Atentie: Carti Intarziate!";
+
+    
+    /// Textul afișat când nu există împrumuturi active
+    
+    public string NoActiveIssuesText => IsAdmin ? "Nu exista imprumuturi active in biblioteca" : "Nu ai imprumuturi active";
+
+    
     /// Mesaj de bun venit personalizat
-    /// </summary>
+    
     public string WelcomeMessage
     {
         get
         {
             var user = AuthenticationService.CurrentUser;
             if (user == null) return "";
+            if (IsAdmin) return $"Bine ai venit, Administrator {user.FullName}!";
             return $"Bine ai venit, {user.FullName}!";
         }
     }
 
-    /// <summary>
+    
     /// Tipul de membru al utilizatorului
-    /// </summary>
+    
     public string MemberTypeDisplay
     {
         get
         {
             var user = AuthenticationService.CurrentUser;
             if (user == null) return "";
+            if (IsAdmin) return "Administrator";
             return user.UserMemberType == MemberType.Professor ? "Profesor" : "Student";
         }
     }
 
-    /// <summary>
+    
     /// Info despre limita de carti
-    /// </summary>
+    
     public string MaxBooksInfo
     {
         get
@@ -71,9 +105,9 @@ public class DashboardViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
+    
     /// Info despre durata maxima
-    /// </summary>
+    
     public string MaxDaysInfo
     {
         get
@@ -84,9 +118,9 @@ public class DashboardViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
+    
     /// Text pentru limita de carti
-    /// </summary>
+    
     public string MyBooksLimit
     {
         get
@@ -149,8 +183,19 @@ public class DashboardViewModel : ViewModelBase
             OnPropertyChanged(nameof(MaxBooksInfo));
             OnPropertyChanged(nameof(MaxDaysInfo));
             OnPropertyChanged(nameof(MyBooksLimit));
+            OnPropertyChanged(nameof(IsAdmin));
+            OnPropertyChanged(nameof(IsNotAdmin));
+            OnPropertyChanged(nameof(DashboardTitle));
+            OnPropertyChanged(nameof(ActiveLoansTitle));
+            OnPropertyChanged(nameof(OverdueWarningTitle));
+            OnPropertyChanged(nameof(NoActiveIssuesText));
 
-            if (CurrentMemberId.HasValue)
+            if (IsAdmin)
+            {
+                // Admin vede toate datele din bibliotecă
+                await LoadAdminDataAsync();
+            }
+            else if (CurrentMemberId.HasValue)
             {
                 // Get user's issues
                 var myIssues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
@@ -180,6 +225,7 @@ public class DashboardViewModel : ViewModelBase
                     MyOverdueBooks.Add(issue);
                 }
 
+                AllActiveMembers.Clear();
                 OnPropertyChanged(nameof(HasNoActiveIssues));
             }
             else
@@ -189,6 +235,7 @@ public class DashboardViewModel : ViewModelBase
                 MyPendingFines = 0;
                 MyRecentIssues.Clear();
                 MyOverdueBooks.Clear();
+                AllActiveMembers.Clear();
             }
 
             SetStatus("Panoul actualizat");
@@ -201,6 +248,44 @@ public class DashboardViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private async Task LoadAdminDataAsync()
+    {
+        // Get all active issues from the library
+        var allActiveIssues = await _libraryService.GetActiveIssuesAsync();
+        var allOverdueIssues = await _libraryService.GetOverdueIssuesAsync();
+
+        MyActiveIssues = allActiveIssues.Count;
+        MyOverdueCount = allOverdueIssues.Count;
+
+        // Get all pending fines from the library
+        var allFines = await _libraryService.GetPendingFinesAsync();
+        MyPendingFines = allFines.Sum(f => f.RemainingAmount);
+
+        // Load all active issues
+        MyRecentIssues.Clear();
+        foreach (var issue in allActiveIssues.OrderByDescending(i => i.IssueDate))
+        {
+            MyRecentIssues.Add(issue);
+        }
+
+        // Load all overdue books
+        MyOverdueBooks.Clear();
+        foreach (var issue in allOverdueIssues.OrderByDescending(i => i.DaysOverdue))
+        {
+            MyOverdueBooks.Add(issue);
+        }
+
+        // Load all active members
+        var allMembers = await _libraryService.GetAllMembersAsync();
+        AllActiveMembers.Clear();
+        foreach (var member in allMembers)
+        {
+            AllActiveMembers.Add(member);
+        }
+
+        OnPropertyChanged(nameof(HasNoActiveIssues));
     }
 
     #endregion

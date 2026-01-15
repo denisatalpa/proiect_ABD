@@ -4,9 +4,9 @@ using LibraryManagementSystem.Models;
 
 namespace LibraryManagementSystem.Services;
 
-/// <summary>
+
 /// Service class handling all library business logic operations
-/// </summary>
+
 public class LibraryService
 {
     private readonly LibraryDbContext _context;
@@ -415,9 +415,9 @@ public class LibraryService
     #endregion
 }
 
-/// <summary>
+
 /// Statistics data transfer object
-/// </summary>
+
 public class LibraryStatistics
 {
     public int TotalBooks { get; set; }

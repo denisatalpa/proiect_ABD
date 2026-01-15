@@ -81,7 +81,7 @@
                 <StackPanel Grid.Row="0"
                             Orientation="Horizontal"
                             Margin="0,0,0,10">
-                    <TextBlock Text="Istoricul Imprumuturilor Mele"
+                    <TextBlock Text="{Binding IssuesListTitle}"
                                FontSize="18"
                                FontWeight="Bold"
                                VerticalAlignment="Center"
@@ -116,6 +116,10 @@
                         <DataGridTextColumn Header="Carte"
                                             Binding="{Binding Book.Title}"
                                             Width="*"/>
+                        <DataGridTextColumn Header="Membru"
+                                            Binding="{Binding Member.FullName}"
+                                            Width="120"
+                                            Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisibility}}"/>
                         <DataGridTextColumn Header="Cod"
                                             Binding="{Binding Book.BookCode}"
                                             Width="60"/>

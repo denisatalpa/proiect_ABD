@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagementSystem.Models;
 
-/// <summary>
+
 /// Base class for library members (Students and Faculty)
-/// </summary>
+
 public abstract class Member
 {
     [Key]

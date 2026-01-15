@@ -6,9 +6,9 @@ using LibraryManagementSystem.Models;
 
 namespace LibraryManagementSystem.Services;
 
-/// <summary>
+
 /// Serviciu pentru autentificarea utilizatorilor
-/// </summary>
+
 public class AuthenticationService
 {
     private readonly LibraryDbContext _context;
@@ -20,37 +20,37 @@ public class AuthenticationService
         _context = context;
     }
 
-    /// <summary>
+    
     /// Utilizatorul curent autentificat
-    /// </summary>
+    
     public static User? CurrentUser
     {
         get => _currentUser;
         private set => _currentUser = value;
     }
 
-    /// <summary>
+    
     /// ID-ul membrului utilizatorului curent (pentru împrumuturi)
-    /// </summary>
+    
     public static int? CurrentUserMemberId
     {
         get => _currentUserMemberId;
         private set => _currentUserMemberId = value;
     }
 
-    /// <summary>
+    
     /// Verifică dacă există un utilizator autentificat
-    /// </summary>
+    
     public static bool IsAuthenticated => CurrentUser != null;
 
-    /// <summary>
+    
     /// Verifică dacă utilizatorul curent este administrator
-    /// </summary>
+    
     public static bool IsAdmin => CurrentUser?.IsAdmin ?? false;
 
-    /// <summary>
+    
     /// Asigură că există un cont de admin implicit
-    /// </summary>
+    
     public async Task EnsureAdminExistsAsync()
     {
         var adminExists = await _context.Users.AnyAsync(u => u.Role == UserRole.Admin);
@@ -72,9 +72,9 @@ public class AuthenticationService
         }
     }
 
-    /// <summary>
+    
     /// Autentifică un utilizator
-    /// </summary>
+    
     public async Task<(bool Success, string Message, User? User)> LoginAsync(string username, string password)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
@@ -106,9 +106,9 @@ public class AuthenticationService
         return (true, $"Bine ați venit, {user.FullName}!", user);
     }
 
-    /// <summary>
+    
     /// Înregistrează un utilizator nou
-    /// </summary>
+    
     public async Task<(bool Success, string Message, User? User)> RegisterAsync(
         string username,
         string email,
@@ -256,17 +256,17 @@ public class AuthenticationService
         return count + 1;
     }
 
-    /// <summary>
+    
     /// Deconectează utilizatorul curent
-    /// </summary>
+    
     public void Logout()
     {
         CurrentUser = null;
     }
 
-    /// <summary>
+    
     /// Obține toți utilizatorii (doar pentru admin)
-    /// </summary>
+    
     public async Task<List<User>> GetAllUsersAsync()
     {
         return await _context.Users
@@ -274,9 +274,9 @@ public class AuthenticationService
             .ToListAsync();
     }
 
-    /// <summary>
+    
     /// Actualizează rolul unui utilizator (doar pentru admin)
-    /// </summary>
+    
     public async Task<(bool Success, string Message)> UpdateUserRoleAsync(int userId, UserRole newRole)
     {
         var user = await _context.Users.FindAsync(userId);
@@ -290,9 +290,9 @@ public class AuthenticationService
         return (true, $"Rolul utilizatorului {user.Username} a fost actualizat la {newRole}.");
     }
 
-    /// <summary>
+    
     /// Hash pentru parolă folosind SHA256
-    /// </summary>
+    
     private static string HashPassword(string password)
     {
         using var sha256 = SHA256.Create();

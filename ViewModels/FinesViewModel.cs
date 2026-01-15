@@ -6,9 +6,9 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// ViewModel for managing fines
-/// </summary>
+
 public class FinesViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;
@@ -64,9 +64,9 @@ public class FinesViewModel : ViewModelBase
         set => SetProperty(ref _totalPendingFines, value);
     }
 
-    /// <summary>
+    
     /// Verifică dacă utilizatorul curent este administrator
-    /// </summary>
+    
     public bool IsAdmin => AuthenticationService.IsAdmin;
 
     #endregion

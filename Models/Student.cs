@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagementSystem.Models;
 
-/// <summary>
+
 /// Student member - can issue up to 3 books for 14 days
-/// </summary>
+
 public class Student : Member
 {
     [Required]

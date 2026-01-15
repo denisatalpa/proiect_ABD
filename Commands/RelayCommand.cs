@@ -2,9 +2,9 @@ using System.Windows.Input;
 
 namespace LibraryManagementSystem.Commands;
 
-/// <summary>
+
 /// A command whose sole purpose is to relay its functionality to other objects by invoking delegates.
-/// </summary>
+
 public class RelayCommand : ICommand
 {
     private readonly Action<object?> _execute;
@@ -38,9 +38,9 @@ public class RelayCommand : ICommand
     }
 }
 
-/// <summary>
+
 /// Async version of RelayCommand
-/// </summary>
+
 public class AsyncRelayCommand : ICommand
 {
     private readonly Func<object?, Task> _execute;

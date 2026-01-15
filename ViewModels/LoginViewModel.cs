@@ -6,9 +6,9 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// ViewModel pentru ecranul de autentificare/înregistrare
-/// </summary>
+
 public class LoginViewModel : ViewModelBase
 {
     private readonly AuthenticationService _authService;
@@ -137,9 +137,9 @@ public class LoginViewModel : ViewModelBase
 
     #region Events
 
-    /// <summary>
+    
     /// Eveniment declanșat când autentificarea reușește
-    /// </summary>
+    
     public event EventHandler? LoginSuccessful;
 
     #endregion

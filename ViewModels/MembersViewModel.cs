@@ -6,9 +6,9 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// ViewModel for managing library members (Students and Faculty)
-/// </summary>
+
 public class MembersViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;

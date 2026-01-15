@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// Base class for all ViewModels implementing INotifyPropertyChanged
-/// </summary>
+
 public abstract class ViewModelBase : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -7,9 +7,9 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// Main ViewModel that manages navigation and overall application state
-/// </summary>
+
 public class MainViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;
@@ -111,19 +111,19 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _isAuthenticated, value);
     }
 
-    /// <summary>
+    
     /// Verifică dacă utilizatorul curent este administrator
-    /// </summary>
+    
     public bool IsAdmin => AuthenticationService.IsAdmin;
 
-    /// <summary>
+    
     /// Numele utilizatorului curent
-    /// </summary>
+    
     public string CurrentUserName => AuthenticationService.CurrentUser?.FullName ?? "";
 
-    /// <summary>
+    
     /// Rolul utilizatorului curent
-    /// </summary>
+    
     public string CurrentUserRole => AuthenticationService.CurrentUser?.Role.ToString() ?? "";
 
     #endregion

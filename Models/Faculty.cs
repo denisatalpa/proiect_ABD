@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagementSystem.Models;
 
-/// <summary>
+
 /// Faculty member - can issue up to 10 books for 30 days
-/// </summary>
+
 public class Faculty : Member
 {
     [Required]

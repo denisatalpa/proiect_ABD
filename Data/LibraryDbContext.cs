@@ -3,9 +3,9 @@ using LibraryManagementSystem.Models;
 
 namespace LibraryManagementSystem.Data;
 
-/// <summary>
+
 /// Entity Framework DbContext for the Library Management System
-/// </summary>
+
 public class LibraryDbContext : DbContext
 {
     public DbSet<Member> Members { get; set; }

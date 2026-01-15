@@ -6,9 +6,9 @@ using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.ViewModels;
 
-/// <summary>
+
 /// ViewModel for managing book issues and returns
-/// </summary>
+
 public class IssuesViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;
@@ -47,9 +47,19 @@ public class IssuesViewModel : ViewModelBase
         set => SetProperty(ref _selectedBookToIssue, value);
     }
 
-    /// <summary>
+    
+    /// Verifică dacă utilizatorul curent este administrator
+    
+    public bool IsAdmin => AuthenticationService.IsAdmin;
+
+    
+    /// Titlul listei de împrumuturi
+    
+    public string IssuesListTitle => IsAdmin ? "Toate Imprumuturile din Biblioteca" : "Istoricul Imprumuturilor Mele";
+
+    
     /// Informatii despre utilizatorul curent
-    /// </summary>
+    
     public string CurrentUserInfo
     {
         get
@@ -57,14 +67,16 @@ public class IssuesViewModel : ViewModelBase
             var user = AuthenticationService.CurrentUser;
             if (user == null) return "";
 
+            if (IsAdmin) return "Administrator - Gestiune imprumuturi biblioteca";
+
             var memberType = user.UserMemberType == MemberType.Professor ? "Profesor" : "Student";
             return $"Imprumut pentru: {user.FullName} ({memberType}) - Max {user.MaxBooksAllowed} carti, {user.MaxIssueDays} zile";
         }
     }
 
-    /// <summary>
+    
     /// ID-ul membrului utilizatorului curent
-    /// </summary>
+    
     private int? CurrentMemberId => AuthenticationService.CurrentUserMemberId;
 
     #endregion
@@ -91,9 +103,24 @@ public class IssuesViewModel : ViewModelBase
             // Load available books
             await LoadAvailableBooksAsync();
 
-            // Load issues for current user only
-            if (CurrentMemberId.HasValue)
+            OnPropertyChanged(nameof(IsAdmin));
+            OnPropertyChanged(nameof(IssuesListTitle));
+            OnPropertyChanged(nameof(CurrentUserInfo));
+
+            if (IsAdmin)
             {
+                // Admin vede toate împrumuturile din bibliotecă
+                var allIssues = await _libraryService.GetAllIssuesAsync();
+                BookIssues.Clear();
+                foreach (var issue in allIssues.OrderByDescending(i => i.IssueDate))
+                {
+                    BookIssues.Add(issue);
+                }
+                SetStatus($"S-au incarcat {allIssues.Count} imprumuturi din biblioteca");
+            }
+            else if (CurrentMemberId.HasValue)
+            {
+                // Load issues for current user only
                 var issues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
                 BookIssues.Clear();
                 foreach (var issue in issues.OrderByDescending(i => i.IssueDate))
@@ -107,8 +134,6 @@ public class IssuesViewModel : ViewModelBase
                 BookIssues.Clear();
                 SetStatus("Nu exista membru asociat contului", true);
             }
-
-            OnPropertyChanged(nameof(CurrentUserInfo));
         }
         catch (Exception ex)
         {
@@ -213,7 +238,17 @@ public class IssuesViewModel : ViewModelBase
         {
             IsBusy = true;
 
-            if (CurrentMemberId.HasValue)
+            if (IsAdmin)
+            {
+                var activeIssues = await _libraryService.GetActiveIssuesAsync();
+                BookIssues.Clear();
+                foreach (var issue in activeIssues.OrderByDescending(i => i.IssueDate))
+                {
+                    BookIssues.Add(issue);
+                }
+                SetStatus($"Se afiseaza {activeIssues.Count} imprumuturi active din biblioteca");
+            }
+            else if (CurrentMemberId.HasValue)
             {
                 var allIssues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
                 var activeIssues = allIssues.Where(i => !i.IsReturned).ToList();
@@ -243,7 +278,17 @@ public class IssuesViewModel : ViewModelBase
         {
             IsBusy = true;
 
-            if (CurrentMemberId.HasValue)
+            if (IsAdmin)
+            {
+                var overdueIssues = await _libraryService.GetOverdueIssuesAsync();
+                BookIssues.Clear();
+                foreach (var issue in overdueIssues.OrderByDescending(i => i.DaysOverdue))
+                {
+                    BookIssues.Add(issue);
+                }
+                SetStatus($"Se afiseaza {overdueIssues.Count} imprumuturi intarziate din biblioteca");
+            }
+            else if (CurrentMemberId.HasValue)
             {
                 var allIssues = await _libraryService.GetMemberIssuesAsync(CurrentMemberId.Value);
                 var overdueIssues = allIssues.Where(i => i.IsOverdue).ToList();

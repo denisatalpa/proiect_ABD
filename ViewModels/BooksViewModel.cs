@@ -8,9 +8,9 @@ namespace LibraryManagementSystem.ViewModels;
 
 // Extensie pentru a verifica dacă utilizatorul curent este admin
 
-/// <summary>
+
 /// ViewModel for managing books
-/// </summary>
+
 public class BooksViewModel : ViewModelBase
 {
     private readonly LibraryService _libraryService;
@@ -111,9 +111,9 @@ public class BooksViewModel : ViewModelBase
         set => SetProperty(ref _isNewBook, value);
     }
 
-    /// <summary>
+    
     /// Verifică dacă utilizatorul curent este administrator
-    /// </summary>
+    
     public bool IsAdmin => AuthenticationService.IsAdmin;
 
     #endregion

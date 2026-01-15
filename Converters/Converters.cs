@@ -5,14 +5,14 @@ using System.Windows.Media;
 
 namespace LibraryManagementSystem.Converters;
 
-/// <summary>
+
 /// Converts boolean to Visibility
-/// </summary>
+
 public class BoolToVisibilityConverter : IValueConverter
 {
-    /// <summary>
+    
     /// Dacă este true, inversează vizibilitatea (true -> Collapsed, false -> Visible)
-    /// </summary>
+    
     public bool InvertVisibility { get; set; }
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -31,9 +31,9 @@ public class BoolToVisibilityConverter : IValueConverter
     }
 }
 
-/// <summary>
+
 /// Converts null/empty string to Visibility (null/empty = Collapsed, not null = Visible)
-/// </summary>
+
 public class NullToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -49,9 +49,9 @@ public class NullToVisibilityConverter : IValueConverter
     }
 }
 
-/// <summary>
+
 /// Converts status to color (error = red, success = green)
-/// </summary>
+
 public class StatusToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -69,9 +69,9 @@ public class StatusToColorConverter : IValueConverter
     }
 }
 
-/// <summary>
+
 /// Converts overdue status to color
-/// </summary>
+
 public class OverdueToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -89,9 +89,9 @@ public class OverdueToColorConverter : IValueConverter
     }
 }
 
-/// <summary>
+
 /// Converts availability to color
-/// </summary>
+
 public class AvailabilityToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -109,9 +109,9 @@ public class AvailabilityToColorConverter : IValueConverter
     }
 }
 
-/// <summary>
+
 /// Converts decimal to currency string in Lei (RON)
-/// </summary>
+
 public class CurrencyConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -141,9 +141,9 @@ public class CurrencyConverter : IValueConverter
     }
 }
 
-/// <summary>
+
 /// Converts date to formatted string
-/// </summary>
+
 public class DateFormatConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

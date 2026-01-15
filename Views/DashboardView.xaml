@@ -27,7 +27,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
             <!-- Header -->
-            <TextBlock Text="Panoul Meu"
+            <TextBlock Text="{Binding DashboardTitle}"
                        FontSize="26"
                        FontWeight="Bold"
                        Margin="10,0,0,5"/>
@@ -96,8 +96,9 @@
                 </Border>
             </Grid>
 
-            <!-- Member Type Info -->
-            <Border Style="{StaticResource StatCardStyle}" Margin="5,15,5,5">
+            <!-- Member Type Info (doar pentru non-admin) -->
+            <Border Style="{StaticResource StatCardStyle}" Margin="5,15,5,5"
+                    Visibility="{Binding IsNotAdmin, Converter={StaticResource BoolToVisibility}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -130,10 +131,43 @@
                 </Grid>
             </Border>
 
-            <!-- My Active Loans List -->
+            <!-- All Active Users (doar pentru admin) -->
+            <Border Style="{StaticResource StatCardStyle}" Margin="5,15,5,5"
+                    Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel>
+                    <TextBlock Text="Utilizatori Activi"
+                               FontWeight="Bold"
+                               FontSize="16"
+                               Margin="0,0,0,10"/>
+                    <DataGrid ItemsSource="{Binding AllActiveMembers}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="Horizontal"
+                              CanUserAddRows="False"
+                              MaxHeight="200">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID"
+                                                Binding="{Binding MembershipId}"
+                                                Width="80"/>
+                            <DataGridTextColumn Header="Nume"
+                                                Binding="{Binding FullName}"
+                                                Width="*"/>
+                            <DataGridTextColumn Header="Tip"
+                                                Binding="{Binding MemberType}"
+                                                Width="80"/>
+                            <DataGridTextColumn Header="Email"
+                                                Binding="{Binding Email}"
+                                                Width="180"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+            <!-- Active Loans List -->
             <Border Style="{StaticResource StatCardStyle}" Margin="5,10,5,5">
                 <StackPanel>
-                    <TextBlock Text="Imprumuturile Mele Active"
+                    <TextBlock Text="{Binding ActiveLoansTitle}"
                                FontWeight="Bold"
                                FontSize="16"
                                Margin="0,0,0,10"/>
@@ -148,6 +182,10 @@
                             <DataGridTextColumn Header="Carte"
                                                 Binding="{Binding Book.Title}"
                                                 Width="*"/>
+                            <DataGridTextColumn Header="Membru"
+                                                Binding="{Binding Member.FullName}"
+                                                Width="120"
+                                                Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisibility}}"/>
                             <DataGridTextColumn Header="Data Imprumut"
                                                 Binding="{Binding IssueDate, StringFormat='dd/MM/yyyy'}"
                                                 Width="100"/>
@@ -159,7 +197,7 @@
                                                 Width="100"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <TextBlock Text="Nu ai imprumuturi active"
+                    <TextBlock Text="{Binding NoActiveIssuesText}"
                                Foreground="#9CA3AF"
                                FontStyle="Italic"
                                Margin="0,10,0,0"
@@ -173,7 +211,7 @@
                     Margin="5,10,5,5"
                     Visibility="{Binding HasOverdueBooks, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel>
-                    <TextBlock Text="Atentie: Carti Intarziate!"
+                    <TextBlock Text="{Binding OverdueWarningTitle}"
                                FontWeight="Bold"
                                FontSize="16"
                                Foreground="#DC2626"
@@ -189,6 +227,10 @@
                             <DataGridTextColumn Header="Carte"
                                                 Binding="{Binding Book.Title}"
                                                 Width="*"/>
+                            <DataGridTextColumn Header="Membru"
+                                                Binding="{Binding Member.FullName}"
+                                                Width="120"
+                                                Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisibility}}"/>
                             <DataGridTextColumn Header="Scadenta"
                                                 Binding="{Binding DueDate, StringFormat='dd/MM/yyyy'}"
                                                 Width="100"/>
