@@ -1,0 +1,148 @@
+<Window x:Class="LibraryManagementSystem.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LibraryManagementSystem.ViewModels"
+        xmlns:views="clr-namespace:LibraryManagementSystem.Views"
+        xmlns:converters="clr-namespace:LibraryManagementSystem.Converters"
+        mc:Ignorable="d"
+        Title="Sistem de Management Bibliotecă"
+        Height="700" Width="1100"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:StatusToColorConverter x:Key="StatusToColor"/>
+        
+        <!-- DataTemplates for ViewModels -->
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <views:DashboardView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BooksViewModel}">
+            <views:BooksView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MembersViewModel}">
+            <views:MembersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:IssuesViewModel}">
+            <views:IssuesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FinesViewModel}">
+            <views:FinesView/>
+        </DataTemplate>
+        
+        <!-- Button Style -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1976D2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Sidebar Navigation -->
+        <Border Grid.Column="0" Background="#1565C0">
+            <StackPanel Margin="10">
+                <!-- Logo/Title -->
+                <TextBlock Text="📚 Bibliotecă"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           Margin="0,20,0,30"/>
+
+                <!-- Navigation Buttons -->
+                <Button Content="🏠 Panou Principal"
+                        Command="{Binding NavigateToDashboardCommand}"
+                        Style="{StaticResource NavButtonStyle}"/>
+
+                <Button Content="📖 Cărți"
+                        Command="{Binding NavigateToBooksCommand}"
+                        Style="{StaticResource NavButtonStyle}"/>
+
+                <Button Content="👥 Membri"
+                        Command="{Binding NavigateToMembersCommand}"
+                        Style="{StaticResource NavButtonStyle}"/>
+
+                <Button Content="📋 Împrumut/Returnare"
+                        Command="{Binding NavigateToIssuesCommand}"
+                        Style="{StaticResource NavButtonStyle}"/>
+
+                <Button Content="💰 Amenzi"
+                        Command="{Binding NavigateToFinesCommand}"
+                        Style="{StaticResource NavButtonStyle}"/>
+                
+                <!-- Info Section -->
+                <Border Margin="0,30,0,0"
+                        Padding="10"
+                        Background="#0D47A1"
+                        CornerRadius="5">
+                    <StackPanel>
+                        <TextBlock Text="Limite împrumut:"
+                                   Foreground="White"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Studenți: 3 cărți, 14 zile"
+                                   Foreground="LightGray"
+                                   FontSize="11"/>
+                        <TextBlock Text="Profesori: 10 cărți, 30 zile"
+                                   Foreground="LightGray"
+                                   FontSize="11"/>
+                        <TextBlock Text="Amendă: 1 Leu/zi"
+                                   Foreground="LightGray"
+                                   FontSize="11"
+                                   Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Content -->
+            <ContentControl Grid.Row="0" 
+                            Content="{Binding CurrentViewModel}"
+                            Margin="10"/>
+            
+            <!-- Status Bar -->
+            <Border Grid.Row="1" 
+                    Background="#F5F5F5" 
+                    Padding="10,5">
+                <Grid>
+                    <TextBlock Text="{Binding CurrentViewModel.StatusMessage}" 
+                               Foreground="{Binding CurrentViewModel.IsError, Converter={StaticResource StatusToColor}}"
+                               VerticalAlignment="Center"/>
+                    <ProgressBar IsIndeterminate="True" 
+                                 Width="100" 
+                                 Height="10"
+                                 HorizontalAlignment="Right"
+                                 Visibility="{Binding CurrentViewModel.IsBusy, Converter={StaticResource BoolToVisibility}}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

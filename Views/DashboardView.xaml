@@ -1,0 +1,211 @@
+<UserControl x:Class="LibraryManagementSystem.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:LibraryManagementSystem.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    
+    <UserControl.Resources>
+        <converters:CurrencyConverter x:Key="CurrencyConverter"/>
+        <converters:DateFormatConverter x:Key="DateFormat"/>
+        
+        <Style x:Key="StatCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <!-- Header -->
+            <TextBlock Text="Panou Principal"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Margin="10,0,0,20"/>
+            
+            <!-- Statistics Cards -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Total Books -->
+                <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📚" FontSize="30"/>
+                        <TextBlock Text="{Binding TotalBooks}"
+                                   FontSize="36"
+                                   FontWeight="Bold"
+                                   Foreground="#2196F3"/>
+                        <TextBlock Text="Total Cărți"
+                                   Foreground="Gray"/>
+                        <TextBlock Text="{Binding AvailableBooks, StringFormat='({0} disponibile)'}"
+                                   Foreground="Green"
+                                   FontSize="11"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Members -->
+                <Border Grid.Column="1" Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="👥" FontSize="30"/>
+                        <TextBlock Text="{Binding TotalMembers}"
+                                   FontSize="36"
+                                   FontWeight="Bold"
+                                   Foreground="#4CAF50"/>
+                        <TextBlock Text="Membri"
+                                   Foreground="Gray"/>
+                        <TextBlock Foreground="Gray" FontSize="11">
+                            <Run Text="{Binding TotalStudents, Mode=OneWay}"/> Studenți,
+                            <Run Text="{Binding TotalFaculty, Mode=OneWay}"/> Profesori
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Active Issues -->
+                <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📋" FontSize="30"/>
+                        <TextBlock Text="{Binding ActiveIssues}"
+                                   FontSize="36"
+                                   FontWeight="Bold"
+                                   Foreground="#FF9800"/>
+                        <TextBlock Text="Împrumuturi Active"
+                                   Foreground="Gray"/>
+                        <TextBlock Text="{Binding OverdueCount, StringFormat='({0} întârziate)'}"
+                                   Foreground="Red"
+                                   FontSize="11"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Pending Fines -->
+                <Border Grid.Column="3" Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="💰" FontSize="30"/>
+                        <TextBlock Text="{Binding PendingFines, Converter={StaticResource CurrencyConverter}}"
+                                   FontSize="30"
+                                   FontWeight="Bold"
+                                   Foreground="#F44336"/>
+                        <TextBlock Text="Amenzi Neachitate"
+                                   Foreground="Gray"/>
+                        <TextBlock Text="{Binding TotalFinesCollected, StringFormat='Încasate: {0:C}', Converter={StaticResource CurrencyConverter}}"
+                                   Foreground="Green"
+                                   FontSize="11"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- Member Limits Info -->
+            <Grid Margin="5,20,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" Background="#E3F2FD">
+                    <StackPanel>
+                        <TextBlock Text="🎓 Limite Studenți" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="Maxim Cărți: 3" Margin="0,10,0,0"/>
+                        <TextBlock Text="Durată Împrumut: 14 zile"/>
+                        <TextBlock Text="Rată Amendă: 1 Leu/zi" Foreground="Red"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" Background="#FFF3E0">
+                    <StackPanel>
+                        <TextBlock Text="👨‍🏫 Limite Profesori" FontWeight="Bold" FontSize="16"/>
+                        <TextBlock Text="Maxim Cărți: 10" Margin="0,10,0,0"/>
+                        <TextBlock Text="Durată Împrumut: 30 zile"/>
+                        <TextBlock Text="Rată Amendă: 1 Leu/zi" Foreground="Red"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- Recent Issues and Overdue -->
+            <Grid Margin="5,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Recent Issues -->
+                <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📋 Împrumuturi Recente"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   Margin="0,0,0,10"/>
+                        <DataGrid ItemsSource="{Binding RecentIssues}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  CanUserAddRows="False"
+                                  MaxHeight="200">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Carte"
+                                                    Binding="{Binding Book.Title}"
+                                                    Width="*"/>
+                                <DataGridTextColumn Header="Membru"
+                                                    Binding="{Binding Member.FullName}"
+                                                    Width="Auto"/>
+                                <DataGridTextColumn Header="Scadență"
+                                                    Binding="{Binding DueDate, StringFormat='dd/MM/yyyy'}"
+                                                    Width="Auto"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Overdue Books -->
+                <Border Grid.Column="1" Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="⚠️ Cărți Întârziate"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   Foreground="Red"
+                                   Margin="0,0,0,10"/>
+                        <DataGrid ItemsSource="{Binding OverdueBooks}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  CanUserAddRows="False"
+                                  MaxHeight="200">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Carte"
+                                                    Binding="{Binding Book.Title}"
+                                                    Width="*"/>
+                                <DataGridTextColumn Header="Membru"
+                                                    Binding="{Binding Member.FullName}"
+                                                    Width="Auto"/>
+                                <DataGridTextColumn Header="Zile"
+                                                    Binding="{Binding DaysOverdue}"
+                                                    Width="Auto">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="Red"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
